@@ -48,7 +48,7 @@ import { saveDateRequest } from "../services/supabase";
 
 const activities = [
   { title: "Watch a Game", image: SportsImg },
-  { title: "Run+Drink", image: RundrinkImg },
+  { title: "Run & Drinks", image: RundrinkImg },
   { title: "Comedy", image: ComedyImg },
   { title: "Mini Golf", image: MinigolfImg },
   { title: "Arcade", image: ArcadeImg },
