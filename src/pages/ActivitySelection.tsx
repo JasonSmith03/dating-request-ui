@@ -59,7 +59,7 @@ const activities = [
 
   const isDateUnavailable = (date: DateValue) => {
     const day = getDayOfWeek(date, "en-US"); // 0 = Sun, 1 = Mon, ... 4 = Thu, 5 = Fri, 6 = Sat
-    return day < 4; // block Sun, Mon, Tue, Wed
+    return day < 3; // block Sun, Mon, Tue, Wed
   };
 
 
