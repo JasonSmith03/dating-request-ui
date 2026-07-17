@@ -1,10 +1,13 @@
 import { Box, Button, Typography } from "@mui/material";
 import { motion } from "framer-motion";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import { useNavigate } from 'react-router-dom';
 
 const MotionHeart = motion(FavoriteIcon);
 
 export default function ThankYou() {
+  const navigate = useNavigate();
+
   return (
     <Box
       sx={{
@@ -116,6 +119,7 @@ export default function ThankYou() {
                 backgroundColor: "#e63d79",
               },
             }}
+            onClick={() => navigate("/")}
           >
             See You Soon 💕
           </Button>
