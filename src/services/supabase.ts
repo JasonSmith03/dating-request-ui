@@ -6,7 +6,7 @@ export async function saveDateRequest(payload: {
 }) {
 
   const response = await fetch(
-    "http://localhost:8082/api/date-request",
+    `/api/date-request`,
     {
       method: "POST",
 
