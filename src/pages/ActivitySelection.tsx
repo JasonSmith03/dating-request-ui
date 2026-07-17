@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ArcadeImg from "../assets/arcade.jpg";
 import BowlingImg from "../assets/bowling.jpg";
@@ -57,27 +57,54 @@ const activities = [
   { title: "Paint Night", image: PaintImg },
 ];
 
-  const isDateUnavailable = (date: DateValue) => {
-    const day = getDayOfWeek(date, "en-US"); // 0 = Sun, 1 = Mon, ... 4 = Thu, 5 = Fri, 6 = Sat
-    return day < 3; // block Sun, Mon, Tue, Wed
-  };
+    const isDateUnavailable = (date: DateValue) => {
+        const day = getDayOfWeek(date, "en-US"); // 0 = Sun, 1 = Mon, 2 = Tue, 3 = Wed, 4 = Thu, 5 = Fri, 6 = Sat
+        // Allow selection on Wednesday through Sunday; block Monday and Tuesday only
+        return day === 1 || day === 2; // block Mon, Tue
+    };
 
 
-const availableTimes = [
-  "5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM",
-  "7:00 PM", "7:30 PM", "8:00 PM",
+const defaultTimes = [
+    "5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM",
+    "7:00 PM", "7:30 PM", "8:00 PM",
 ];
+
+const getAvailableTimesForDate = (date: CalendarDate | null) => {
+    if (!date) return defaultTimes;
+
+    const day = getDayOfWeek(date, "en-US");
+
+    // 3 = Wed, 4 = Thu, 5 = Fri => evenings only
+    if (day === 3 || day === 4 || day === 5) {
+        return ["6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM"];
+    }
+
+    // 6 = Sat, 0 = Sun => extended daytime + evening
+    if (day === 6 || day === 0) {
+        return ["10:00 AM", "11:00 AM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM"];
+    }
+
+    return defaultTimes;
+};
 
 const MotionHeart = motion(FavoriteIcon);
 
 export default function ActivitySelection() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<CalendarDate | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const name = (location.state as { name?: string } | null)?.name ?? "";
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
+    const [selectedDate, setSelectedDate] = useState<CalendarDate | null>(null);
+    const [selectedTime, setSelectedTime] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const name = (location.state as { name?: string } | null)?.name ?? "";
+
+    // Reset or validate selectedTime when selectedDate changes
+    useEffect(() => {
+        const times = getAvailableTimesForDate(selectedDate);
+        if (selectedTime && !times.includes(selectedTime)) {
+            setSelectedTime(null);
+        }
+    }, [selectedDate]);
 
   const handleSubmit = async () => {
     if (!selectedActivity || !selectedDate || !selectedTime) {
@@ -121,43 +148,41 @@ export default function ActivitySelection() {
     }
   };
 
-  return (
-    <Box
-    sx={{
-        minHeight: "100vh",
-        background:
-        "linear-gradient(135deg,#ffe6f2 0%,#ffd6ec 50%,#fff5fb 100%)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        py: 6,
-        position: "relative",
-        overflow: "hidden",
-    }}
-    >
-    <MotionHeart
-        sx={{
-        position: "absolute",
-        fontSize: 280,
-        color: "#ff4d88",
-        opacity: 0.08,
-        }}
-        animate={{
-        y: [-20, 20, -20],
-        scale: [1, 1.08, 1],
-        rotate: [-5, 5, -5],
-        }}
-        transition={{
-        duration: 5,
-        repeat: Infinity,
-        ease: "easeInOut",
-        }}
-    />
+    return (
+        <Box
+            sx={{
+                minHeight: "100vh",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                overflow: "hidden",
+                position: "relative",
+                background: "linear-gradient(135deg, #ffe6f2 0%, #ffd6ec 50%, #fff5fb 100%)",
+            }}
+        >
+            <MotionHeart
+                sx={{
+                    position: "absolute",
+                    fontSize: 280,
+                    color: "#ff4d88",
+                    opacity: 0.08,
+                }}
+                animate={{
+                    y: [-20, 20, -20],
+                    scale: [1, 1.08, 1],
+                    rotate: [-5, 5, -5],
+                }}
+                transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                }}
+            />
 
-        <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
+            <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7 }}
             >
             <Container
                 maxWidth="lg"
@@ -336,7 +361,7 @@ export default function ActivitySelection() {
                 useFlexGap
                 sx={{ flexWrap: "wrap", justifyContent: "center" }}
                 >
-                {availableTimes.map((time) => (
+                {getAvailableTimesForDate(selectedDate).map((time) => (
                     <MuiButton
                     key={time}
                     variant={selectedTime === time ? "contained" : "outlined"}
